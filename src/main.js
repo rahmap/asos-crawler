@@ -1,7 +1,9 @@
 const Apify = require('apify')
 
 const {
-  utils: { log }
+  utils: {
+    log
+  }
 } = Apify
 
 const products = []
@@ -16,11 +18,15 @@ Apify.main(async () => {
 
   const crawler = new Apify.PuppeteerCrawler({
     requestList,
-    handlePageFunction: async ({ request, page }) => {
+    handlePageFunction: async ({
+      request,
+      page
+    }) => {
       console.log(`Processing ${request.url}...`)
 
       const price = (await page.$eval('#aside-content .current-price-container', el => el.textContent)).trim()
       const title = (await page.$eval('#aside-content h1', el => el.textContent)).trim()
+      const imageUrl = (await page.$eval('.fullImageContainer img', el => el.src)).trim()
       const priceArr = price.split(/(\p{Sc}|([0-9]+))/)
       const productId = request.url.split('/').slice(-1)[0]
       const results = {
@@ -30,6 +36,7 @@ Apify.main(async () => {
         createdAt: new Date(),
         nominal: parseFloat(priceArr[1]),
         currency: priceArr[0],
+        image: imageUrl[0],
         productId
       }
 
@@ -40,7 +47,9 @@ Apify.main(async () => {
       return results
     },
 
-    handleFailedRequestFunction: async ({ request }) => {
+    handleFailedRequestFunction: async ({
+      request
+    }) => {
       console.log(`Request ${request.url} failed too many times`)
       await Apify.pushData({
         '#debug': Apify.utils.createRequestDebugInfo(request)
