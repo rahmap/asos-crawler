@@ -26,7 +26,7 @@ Apify.main(async () => {
 
       const price = (await page.$eval('#aside-content .current-price-container', el => el.textContent)).trim()
       const title = (await page.$eval('#aside-content h1', el => el.textContent)).trim()
-      const imageUrl = (await page.$eval('.fullImageContainer img', el => el.src)).trim()
+      const imageUrl = document.getElementById('.fullImageContainer img').src
       const priceArr = price.split(/(\p{Sc}|([0-9]+))/)
       const productId = request.url.split('/').slice(-1)[0]
       const results = {
