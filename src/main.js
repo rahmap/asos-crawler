@@ -23,26 +23,23 @@ Apify.main(async () => {
       page
     }) => {
       console.log(`Processing ${request.url}...`)
+      await Apify.utils.puppeteer.infiniteScroll(page, {
+        timeoutSecs: 0,
+        waitForSecs: 8
+      }).then(async function () {
+        const title = (await page.$eval('.css-1bjwylw', el => el.textContent)).trim() //class judul produk
+        const results = {
+          url: request.url,
+          title,
+        }
 
-      const price = (await page.$eval('#aside-content .current-price-container', el => el.textContent)).trim()
-      const title = (await page.$eval('#aside-content h1', el => el.textContent)).trim()
-      const priceArr = price.split(/(\p{Sc}|([0-9]+))/)
-      const productId = request.url.split('/').slice(-1)[0]
-      const results = {
-        url: request.url,
-        title,
-        price,
-        createdAt: new Date(),
-        nominal: parseFloat(priceArr[1]),
-        currency: priceArr[0],
-        productId
-      }
+        products.push(results)
 
-      products.push(results)
+        await Apify.setValue('OUTPUT', products) // save to json
 
-      await Apify.setValue('OUTPUT', products) // save to json
+        return results
+      })
 
-      return results
     },
 
     handleFailedRequestFunction: async ({
